@@ -10,6 +10,7 @@ A production-ready full-stack boilerplate with a Rails 8 API backend and React 1
 - **Single-App Deployment** - Rails serves the React build from `public/`
 - **Testing** - RSpec (Rails) and Jest (React) pre-configured
 - **Linting** - RuboCop (Ruby) and ESLint (TypeScript) ready to go
+- **Pre-commit Hooks** - Husky + lint-staged for automatic linting on commit
 - **Heroku-Ready** - Procfile, production config, and Postgres addon support
 
 ## Tech Stack
@@ -77,6 +78,9 @@ bundle install
 
 # Node packages
 cd frontend && npm install && cd ..
+
+# Root packages (husky/lint-staged for pre-commit hooks)
+npm install
 ```
 
 ### 5. Create Databases
@@ -95,6 +99,9 @@ cd frontend && CI=true npm test && cd ..
 # Run linters
 bundle exec rubocop
 cd frontend && npm run lint && cd ..
+
+# TypeScript type checking
+cd frontend && npm run typecheck && cd ..
 ```
 
 ## Local Development
@@ -176,6 +183,16 @@ git push heroku master
 - **API routes** (`/api/v1/*`) return JSON
 - **All other routes** serve the React SPA from `public/index.html`
 - **React** handles client-side routing
+
+## Pre-commit Hooks
+
+This template uses [Husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/lint-staged/lint-staged) to automatically run linters on staged files before each commit.
+
+**What runs on commit:**
+- **Ruby files (*.rb)**: RuboCop with auto-correct
+- **TypeScript files (frontend/src/**/*.{ts,tsx})**: ESLint and TypeScript type checking
+
+The hooks are automatically enabled after running `npm install` in the project root.
 
 ## Project Structure
 

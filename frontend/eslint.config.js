@@ -21,8 +21,12 @@ export default [
         document: 'readonly',
         window: 'readonly',
         console: 'readonly',
+        fetch: 'readonly',
         test: 'readonly',
         expect: 'readonly',
+        beforeEach: 'readonly',
+        jest: 'readonly',
+        global: 'readonly',
         HTMLElement: 'readonly'
       }
     },

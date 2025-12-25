@@ -33,3 +33,6 @@
 
 # Claude Code memory file - local only
 CLAUDE.md
+
+# Root node modules (husky/lint-staged)
+/node_modules
