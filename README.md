@@ -6,6 +6,7 @@ A production-ready full-stack boilerplate with a Rails 8 API backend and React 1
 
 - **Rails 8 API** - Backend configured for API-only mode
 - **React 19 + TypeScript** - Modern frontend with type safety
+- **Material UI (MUI)** - Component library for polished, accessible UI
 - **PostgreSQL** - Production-ready database
 - **Single-App Deployment** - Rails serves the React build from `public/`
 - **Testing** - RSpec (Rails) and Jest (React) pre-configured
@@ -18,7 +19,7 @@ A production-ready full-stack boilerplate with a Rails 8 API backend and React 1
 | Layer | Technology |
 |-------|------------|
 | Backend | Rails 8 (API mode) |
-| Frontend | React 19, TypeScript |
+| Frontend | React 19, TypeScript, Material UI |
 | Database | PostgreSQL |
 | Testing | RSpec, Jest |
 | Linting | RuboCop, ESLint |
