@@ -8,7 +8,14 @@ Rails.application.routes.draw do
   # API routes
   namespace :api do
     namespace :v1 do
-      # API endpoints go here
+      # Authentication
+      post "signup", to: "registrations#create"
+      post "login", to: "sessions#create"
+      delete "logout", to: "sessions#destroy"
+
+      # Current user
+      get "me", to: "users#me"
+      patch "me", to: "users#update"
     end
   end
 
