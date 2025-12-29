@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Container,
@@ -11,36 +10,44 @@ import {
   Link,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
+import { useForm } from '../hooks/useForm';
+
+interface RegisterFormValues {
+  name: string;
+  email: string;
+  password: string;
+  passwordConfirmation: string;
+}
+
+const INITIAL_VALUES: RegisterFormValues = {
+  name: '',
+  email: '',
+  password: '',
+  passwordConfirmation: '',
+};
+
+function validatePasswords(values: RegisterFormValues): string | null {
+  if (values.password !== values.passwordConfirmation) {
+    return 'Passwords do not match';
+  }
+  return null;
+}
 
 export default function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirmation, setPasswordConfirmation] = useState('');
-  const [name, setName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const { signup } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    if (password !== passwordConfirmation) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    setLoading(true);
-    const err = await signup(email, password, passwordConfirmation, name || undefined);
-    setLoading(false);
-
-    if (err) {
-      setError(err);
-    } else {
-      navigate('/');
-    }
-  };
+  const { values, error, loading, handleChange, handleSubmit } = useForm({
+    initialValues: INITIAL_VALUES,
+    validate: validatePasswords,
+    onSubmit: async ({ email, password, passwordConfirmation, name }) => {
+      const err = await signup(email, password, passwordConfirmation, name || undefined);
+      if (!err) {
+        navigate('/');
+      }
+      return err;
+    },
+  });
 
   return (
     <Container maxWidth="sm">
@@ -60,8 +67,8 @@ export default function Register() {
             <TextField
               fullWidth
               label="Name (optional)"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={values.name}
+              onChange={handleChange('name')}
               margin="normal"
               autoFocus
             />
@@ -69,8 +76,8 @@ export default function Register() {
               fullWidth
               label="Email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={values.email}
+              onChange={handleChange('email')}
               margin="normal"
               required
             />
@@ -78,8 +85,8 @@ export default function Register() {
               fullWidth
               label="Password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={values.password}
+              onChange={handleChange('password')}
               margin="normal"
               required
               helperText="At least 6 characters"
@@ -88,8 +95,8 @@ export default function Register() {
               fullWidth
               label="Confirm Password"
               type="password"
-              value={passwordConfirmation}
-              onChange={(e) => setPasswordConfirmation(e.target.value)}
+              value={values.passwordConfirmation}
+              onChange={handleChange('passwordConfirmation')}
               margin="normal"
               required
             />

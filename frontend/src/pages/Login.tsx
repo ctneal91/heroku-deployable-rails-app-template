@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Container,
@@ -11,29 +10,32 @@ import {
   Link,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
+import { useForm } from '../hooks/useForm';
+
+interface LoginFormValues {
+  email: string;
+  password: string;
+}
+
+const INITIAL_VALUES: LoginFormValues = {
+  email: '',
+  password: '',
+};
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const err = await login(email, password);
-    setLoading(false);
-
-    if (err) {
-      setError(err);
-    } else {
-      navigate('/');
-    }
-  };
+  const { values, error, loading, handleChange, handleSubmit } = useForm({
+    initialValues: INITIAL_VALUES,
+    onSubmit: async ({ email, password }) => {
+      const err = await login(email, password);
+      if (!err) {
+        navigate('/');
+      }
+      return err;
+    },
+  });
 
   return (
     <Container maxWidth="sm">
@@ -54,8 +56,8 @@ export default function Login() {
               fullWidth
               label="Email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={values.email}
+              onChange={handleChange('email')}
               margin="normal"
               required
               autoFocus
@@ -64,8 +66,8 @@ export default function Login() {
               fullWidth
               label="Password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={values.password}
+              onChange={handleChange('password')}
               margin="normal"
               required
             />

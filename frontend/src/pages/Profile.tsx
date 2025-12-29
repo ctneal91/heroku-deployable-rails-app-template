@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -11,57 +10,80 @@ import {
   Divider,
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
+import { useForm } from '../hooks/useForm';
+
+interface ProfileFormValues {
+  name: string;
+  avatarUrl: string;
+  password: string;
+  passwordConfirmation: string;
+}
+
+function validatePasswordMatch(values: ProfileFormValues): string | null {
+  if (values.password && values.password !== values.passwordConfirmation) {
+    return 'Passwords do not match';
+  }
+  return null;
+}
+
+function buildProfileData(values: ProfileFormValues) {
+  const data: {
+    name?: string;
+    avatar_url?: string;
+    password?: string;
+    password_confirmation?: string;
+  } = {
+    name: values.name || undefined,
+    avatar_url: values.avatarUrl || undefined,
+  };
+
+  if (values.password) {
+    data.password = values.password;
+    data.password_confirmation = values.passwordConfirmation;
+  }
+
+  return data;
+}
 
 export default function Profile() {
   const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
 
-  const [name, setName] = useState(user?.name || '');
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '');
-  const [password, setPassword] = useState('');
-  const [passwordConfirmation, setPasswordConfirmation] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const initialValues: ProfileFormValues = {
+    name: user?.name || '',
+    avatarUrl: user?.avatar_url || '',
+    password: '',
+    passwordConfirmation: '',
+  };
+
+  const {
+    values,
+    error,
+    success,
+    loading,
+    handleChange,
+    handleSubmit,
+    setSuccess,
+    resetField,
+  } = useForm({
+    initialValues,
+    validate: validatePasswordMatch,
+    onSubmit: async (formValues) => {
+      const data = buildProfileData(formValues);
+      const err = await updateProfile(data);
+      if (!err) {
+        setSuccess('Profile updated successfully');
+        resetField('password', '');
+        resetField('passwordConfirmation', '');
+      }
+      return err;
+    },
+  });
 
   if (!user) {
     navigate('/login');
     return null;
   }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
-
-    if (password && password !== passwordConfirmation) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    setLoading(true);
-
-    const data: { name?: string; avatar_url?: string; password?: string; password_confirmation?: string } = {
-      name: name || undefined,
-      avatar_url: avatarUrl || undefined,
-    };
-
-    if (password) {
-      data.password = password;
-      data.password_confirmation = passwordConfirmation;
-    }
-
-    const err = await updateProfile(data);
-    setLoading(false);
-
-    if (err) {
-      setError(err);
-    } else {
-      setSuccess('Profile updated successfully');
-      setPassword('');
-      setPasswordConfirmation('');
-    }
-  };
 
   return (
     <Container maxWidth="sm">
@@ -91,15 +113,15 @@ export default function Profile() {
             <TextField
               fullWidth
               label="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={values.name}
+              onChange={handleChange('name')}
               margin="normal"
             />
             <TextField
               fullWidth
               label="Avatar URL"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
+              value={values.avatarUrl}
+              onChange={handleChange('avatarUrl')}
               margin="normal"
               helperText="URL to your profile picture"
             />
@@ -117,16 +139,16 @@ export default function Profile() {
               fullWidth
               label="New Password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={values.password}
+              onChange={handleChange('password')}
               margin="normal"
             />
             <TextField
               fullWidth
               label="Confirm New Password"
               type="password"
-              value={passwordConfirmation}
-              onChange={(e) => setPasswordConfirmation(e.target.value)}
+              value={values.passwordConfirmation}
+              onChange={handleChange('passwordConfirmation')}
               margin="normal"
             />
 

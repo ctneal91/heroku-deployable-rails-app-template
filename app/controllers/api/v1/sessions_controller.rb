@@ -6,7 +6,7 @@ module Api
 
         if user&.authenticate(params[:password])
           log_in(user)
-          render json: { user: user_json(user) }
+          render json: { user: UserSerializer.new(user).as_json }
         else
           render json: { error: "Invalid email or password" }, status: :unauthorized
         end
@@ -15,17 +15,6 @@ module Api
       def destroy
         log_out
         head :no_content
-      end
-
-      private
-
-      def user_json(user)
-        {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          avatar_url: user.avatar_url
-        }
       end
     end
   end

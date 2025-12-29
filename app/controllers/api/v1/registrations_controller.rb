@@ -6,7 +6,7 @@ module Api
 
         if user.save
           log_in(user)
-          render json: { user: user_json(user) }, status: :created
+          render json: { user: UserSerializer.new(user).as_json }, status: :created
         else
           render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
         end
@@ -16,15 +16,6 @@ module Api
 
       def user_params
         params.permit(:email, :password, :password_confirmation, :name, :avatar_url)
-      end
-
-      def user_json(user)
-        {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          avatar_url: user.avatar_url
-        }
       end
     end
   end
