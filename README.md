@@ -187,11 +187,15 @@ git push heroku master
 
 ## Pre-commit Hooks
 
-This template uses [Husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/lint-staged/lint-staged) to automatically run linters and tests on staged files before each commit.
+This template uses [Husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/lint-staged/lint-staged) to automatically run linters and tests before each commit.
 
 **What runs on commit:**
-- **Ruby files (*.rb)**: RuboCop with auto-correct, then full RSpec test suite with coverage check
-- **TypeScript files (frontend/src/**/*.{ts,tsx})**: ESLint, TypeScript type checking, then Jest tests with coverage check
+1. **Linting (via lint-staged):**
+   - Ruby files: RuboCop with auto-correct
+   - TypeScript files: ESLint and TypeScript type checking
+2. **Test suites (always run):**
+   - RSpec test suite with coverage check
+   - Jest test suite with coverage check
 
 The hooks are automatically enabled after running `npm install` in the project root.
 
