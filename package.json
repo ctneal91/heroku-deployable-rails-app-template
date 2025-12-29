@@ -2,7 +2,12 @@
   "name": "myapp",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
+    "build": "cd frontend && npm install && npm run build && cp -r build/* ../public/",
+    "heroku-postbuild": "npm run build",
     "lint:ruby": "bundle exec rubocop",
     "lint:frontend": "cd frontend && npm run lint",
     "typecheck": "cd frontend && npm run typecheck",

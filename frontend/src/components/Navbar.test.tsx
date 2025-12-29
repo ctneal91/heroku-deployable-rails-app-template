@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import Navbar from './Navbar';
 import { AuthProvider } from '../contexts/AuthContext';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import { api } from '../services/api';
 
 jest.mock('../services/api');
@@ -10,11 +11,13 @@ const mockedApi = api as jest.Mocked<typeof api>;
 
 const renderNavbar = () => {
   return render(
-    <BrowserRouter>
-      <AuthProvider>
-        <Navbar />
-      </AuthProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <Navbar />
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 };
 
@@ -56,7 +59,7 @@ describe('Navbar', () => {
       expect(screen.getByText('T')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('button', { name: /t/i }));
 
     await waitFor(() => {
       expect(screen.getByText('test@example.com')).toBeInTheDocument();
@@ -78,7 +81,7 @@ describe('Navbar', () => {
       expect(screen.getByText('T')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('button', { name: /t/i }));
 
     await waitFor(() => {
       expect(screen.getByRole('menuitem', { name: /logout/i })).toBeInTheDocument();
@@ -99,6 +102,31 @@ describe('Navbar', () => {
       const titleLink = screen.getByRole('link', { name: /my app/i });
       expect(titleLink).toBeInTheDocument();
       expect(titleLink).toHaveAttribute('href', '/');
+    });
+  });
+
+  it('shows dark mode toggle button', async () => {
+    mockedApi.getMe.mockResolvedValue({ data: { user: null } });
+    renderNavbar();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /dark mode/i })).toBeInTheDocument();
+    });
+  });
+
+  it('toggles theme when clicking dark mode button', async () => {
+    const user = userEvent.setup();
+    mockedApi.getMe.mockResolvedValue({ data: { user: null } });
+    renderNavbar();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /dark mode/i })).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /dark mode/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /light mode/i })).toBeInTheDocument();
     });
   });
 });

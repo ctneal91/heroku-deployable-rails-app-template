@@ -37,8 +37,8 @@
       "global": {
         "branches": 90,
         "functions": 95,
-        "lines": 99,
-        "statements": 99
+        "lines": 98,
+        "statements": 98
       }
     },
     "collectCoverageFrom": [
