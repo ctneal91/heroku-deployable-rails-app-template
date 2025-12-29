@@ -199,6 +199,8 @@ This template uses [Husky](https://typicode.github.io/husky/) and [lint-staged](
 
 The hooks are automatically enabled after running `npm install` in the project root.
 
+> **Note:** Running full test suites on every commit is not the most efficient approach for larger projects. As your codebase grows, consider moving test execution to CI/CD pipelines (GitHub Actions, CircleCI, etc.) and keeping only linting in pre-commit hooks. This template runs tests in pre-commit hooks as a starting point to ensure code quality from day one.
+
 ## Test Coverage Requirements
 
 The project enforces minimum test coverage thresholds. Commits will be rejected if coverage drops below these levels:
