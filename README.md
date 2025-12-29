@@ -7,6 +7,7 @@ A production-ready full-stack boilerplate with a Rails 8 API backend and React 1
 - **Rails 8 API** - Backend configured for API-only mode
 - **React 19 + TypeScript** - Modern frontend with type safety
 - **Material UI (MUI)** - Component library for polished, accessible UI
+- **Dark Mode** - Toggle between light and dark themes with localStorage persistence
 - **PostgreSQL** - Production-ready database
 - **Single-App Deployment** - Rails serves the React build from `public/`
 - **Testing** - RSpec (Rails) and Jest (React) pre-configured
@@ -184,6 +185,26 @@ git push heroku master
 - **API routes** (`/api/v1/*`) return JSON
 - **All other routes** serve the React SPA from `public/index.html`
 - **React** handles client-side routing
+
+## Dark Mode
+
+The app includes a dark mode toggle in the navbar. Features:
+
+- **Toggle button** - Click the sun/moon icon to switch themes
+- **Persistence** - Theme preference is saved to localStorage
+- **System preference** - Respects `prefers-color-scheme` on first visit
+- **MUI integration** - Uses Material UI's built-in theming system
+
+The theme is managed via React Context (`ThemeContext`) and can be accessed in any component:
+
+```tsx
+import { useTheme } from '../contexts/ThemeContext';
+
+function MyComponent() {
+  const { mode, toggleTheme } = useTheme();
+  // mode is 'light' or 'dark'
+}
+```
 
 ## Pre-commit Hooks
 

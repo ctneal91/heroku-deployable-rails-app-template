@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { Box } from '@mui/material';
-import Navbar from './Navbar';
+import Navbar from '../Navbar';
 
 export default function Layout() {
   return (

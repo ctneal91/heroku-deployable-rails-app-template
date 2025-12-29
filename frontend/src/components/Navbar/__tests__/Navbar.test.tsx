@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
-import Navbar from './Navbar';
-import { AuthProvider } from '../contexts/AuthContext';
-import { ThemeProvider } from '../contexts/ThemeContext';
-import { api } from '../services/api';
+import Navbar from '../Navbar';
+import { AuthProvider } from '../../../contexts/AuthContext';
+import { ThemeProvider } from '../../../contexts/ThemeContext';
+import { api } from '../../../services/api';
 
-jest.mock('../services/api');
+jest.mock('../../../services/api');
 const mockedApi = api as jest.Mocked<typeof api>;
 
 const renderNavbar = () => {

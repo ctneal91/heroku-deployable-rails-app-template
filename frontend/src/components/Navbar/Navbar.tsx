@@ -13,8 +13,8 @@ import {
 } from '@mui/material';
 import { Brightness4, Brightness7 } from '@mui/icons-material';
 import { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
