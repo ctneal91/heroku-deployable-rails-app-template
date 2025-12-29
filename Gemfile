@@ -55,4 +55,7 @@ group :development, :test do
 
   # Test coverage
   gem "simplecov", require: false
+
+  # Test matchers
+  gem "shoulda-matchers"
 end
