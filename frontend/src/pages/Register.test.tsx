@@ -17,6 +17,19 @@ const renderRegister = () => {
   );
 };
 
+// Helper to get MUI TextField inputs by label text
+const getInputByLabel = (labelText: string | RegExp) => {
+  const allInputs = Array.from(document.querySelectorAll('input'));
+  for (const input of allInputs) {
+    const formControl = input.closest('.MuiFormControl-root');
+    const label = formControl?.querySelector('label');
+    if (label && (typeof labelText === 'string' ? label.textContent?.includes(labelText) : labelText.test(label.textContent || ''))) {
+      return input;
+    }
+  }
+  throw new Error(`Could not find input with label "${labelText}"`);
+};
+
 describe('Register', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -41,12 +54,16 @@ describe('Register', () => {
     renderRegister();
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /sign up/i })).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'different' } });
+    const emailInput = getInputByLabel('Email');
+    const passwordInput = getInputByLabel('Password');
+    const confirmInput = getInputByLabel('Confirm Password');
+
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.change(confirmInput, { target: { value: 'different' } });
     fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
     await waitFor(() => {
@@ -62,13 +79,18 @@ describe('Register', () => {
     renderRegister();
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /sign up/i })).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Test' } });
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } });
+    const nameInput = getInputByLabel(/name/i);
+    const emailInput = getInputByLabel('Email');
+    const passwordInput = getInputByLabel('Password');
+    const confirmInput = getInputByLabel('Confirm Password');
+
+    fireEvent.change(nameInput, { target: { value: 'Test' } });
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.change(confirmInput, { target: { value: 'password123' } });
     fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
     await waitFor(() => {
@@ -82,12 +104,16 @@ describe('Register', () => {
     renderRegister();
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /sign up/i })).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } });
+    const emailInput = getInputByLabel('Email');
+    const passwordInput = getInputByLabel('Password');
+    const confirmInput = getInputByLabel('Confirm Password');
+
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.change(confirmInput, { target: { value: 'password123' } });
     fireEvent.click(screen.getByRole('button', { name: /sign up/i }));
 
     await waitFor(() => {

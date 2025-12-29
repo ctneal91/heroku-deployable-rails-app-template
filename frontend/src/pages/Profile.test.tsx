@@ -23,6 +23,19 @@ const renderProfile = () => {
   );
 };
 
+// Helper to get MUI TextField inputs by label text
+const getInputByLabel = (labelText: string | RegExp) => {
+  const allInputs = Array.from(document.querySelectorAll('input'));
+  for (const input of allInputs) {
+    const formControl = input.closest('.MuiFormControl-root');
+    const label = formControl?.querySelector('label');
+    if (label && (typeof labelText === 'string' ? label.textContent?.includes(labelText) : labelText.test(label.textContent || ''))) {
+      return input;
+    }
+  }
+  throw new Error(`Could not find input with label "${labelText}"`);
+};
+
 describe('Profile', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -59,10 +72,11 @@ describe('Profile', () => {
     renderProfile();
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /profile/i })).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'Updated' } });
+    const nameInput = getInputByLabel('Name');
+    fireEvent.change(nameInput, { target: { value: 'Updated' } });
     fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
 
     await waitFor(() => {
@@ -78,11 +92,14 @@ describe('Profile', () => {
     renderProfile();
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/new password/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /profile/i })).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText(/new password/i), { target: { value: 'newpassword' } });
-    fireEvent.change(screen.getByLabelText(/confirm new password/i), { target: { value: 'different' } });
+    const newPasswordInput = getInputByLabel('New Password');
+    const confirmPasswordInput = getInputByLabel('Confirm New Password');
+
+    fireEvent.change(newPasswordInput, { target: { value: 'newpassword' } });
+    fireEvent.change(confirmPasswordInput, { target: { value: 'different' } });
     fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
 
     await waitFor(() => {
@@ -99,14 +116,79 @@ describe('Profile', () => {
     renderProfile();
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /profile/i })).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'New Name' } });
+    const nameInput = getInputByLabel('Name');
+    fireEvent.change(nameInput, { target: { value: 'New Name' } });
     fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Update failed');
+    });
+  });
+
+  it('updates password with matching confirmation', async () => {
+    mockedApi.getMe.mockResolvedValue({
+      data: { user: { id: 1, email: 'test@example.com', name: 'Test User', avatar_url: null } }
+    });
+    mockedApi.updateProfile.mockResolvedValue({
+      data: { user: { id: 1, email: 'test@example.com', name: 'Test User', avatar_url: null } }
+    });
+
+    renderProfile();
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /profile/i })).toBeInTheDocument();
+    });
+
+    const newPasswordInput = getInputByLabel('New Password');
+    const confirmPasswordInput = getInputByLabel('Confirm New Password');
+
+    fireEvent.change(newPasswordInput, { target: { value: 'newpassword123' } });
+    fireEvent.change(confirmPasswordInput, { target: { value: 'newpassword123' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    await waitFor(() => {
+      expect(mockedApi.updateProfile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          password: 'newpassword123',
+          password_confirmation: 'newpassword123',
+        })
+      );
+    });
+  });
+
+  it('shows saving state during profile update', async () => {
+    mockedApi.getMe.mockResolvedValue({
+      data: { user: { id: 1, email: 'test@example.com', name: 'Test User', avatar_url: null } }
+    });
+    // Use a promise that we control to keep the loading state active
+    let resolveUpdate: (value: { data: { user: { id: number; email: string; name: string; avatar_url: null } } }) => void;
+    mockedApi.updateProfile.mockImplementation(() => new Promise(resolve => {
+      resolveUpdate = resolve;
+    }));
+
+    renderProfile();
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /profile/i })).toBeInTheDocument();
+    });
+
+    const nameInput = getInputByLabel('Name');
+    fireEvent.change(nameInput, { target: { value: 'New Name' } });
+    fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
+
+    // Check loading state is shown
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /saving/i })).toBeInTheDocument();
+    });
+
+    // Resolve the update
+    resolveUpdate!({ data: { user: { id: 1, email: 'test@example.com', name: 'New Name', avatar_url: null } } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Profile updated successfully')).toBeInTheDocument();
     });
   });
 });
