@@ -36,3 +36,6 @@ CLAUDE.md
 
 # Root node modules (husky/lint-staged)
 /node_modules
+
+# Test coverage
+/coverage
