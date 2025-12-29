@@ -187,13 +187,38 @@ git push heroku master
 
 ## Pre-commit Hooks
 
-This template uses [Husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/lint-staged/lint-staged) to automatically run linters on staged files before each commit.
+This template uses [Husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/lint-staged/lint-staged) to automatically run linters and tests on staged files before each commit.
 
 **What runs on commit:**
-- **Ruby files (*.rb)**: RuboCop with auto-correct
-- **TypeScript files (frontend/src/**/*.{ts,tsx})**: ESLint and TypeScript type checking
+- **Ruby files (*.rb)**: RuboCop with auto-correct, then full RSpec test suite with coverage check
+- **TypeScript files (frontend/src/**/*.{ts,tsx})**: ESLint, TypeScript type checking, then Jest tests with coverage check
 
 The hooks are automatically enabled after running `npm install` in the project root.
+
+## Test Coverage Requirements
+
+The project enforces minimum test coverage thresholds. Commits will be rejected if coverage drops below these levels:
+
+**Rails (SimpleCov):**
+- Overall coverage: 100%
+- Per-file minimum: 80%
+
+**React (Jest):**
+- Statements: 99%
+- Branches: 90%
+- Functions: 95%
+- Lines: 99%
+
+Run coverage reports locally:
+
+```bash
+# Rails coverage
+bundle exec rspec
+# View report: open coverage/index.html
+
+# React coverage
+cd frontend && npm run test:coverage
+```
 
 ## Project Structure
 
