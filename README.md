@@ -9,6 +9,7 @@ A production-ready full-stack boilerplate with a Rails 8 API backend and React 1
 - **Material UI (MUI)** - Component library for polished, accessible UI
 - **Dark Mode** - Toggle between light and dark themes with localStorage persistence
 - **PostgreSQL** - Production-ready database
+- **Docker** - Full development environment with one command
 - **Single-App Deployment** - Rails serves the React build from `public/`
 - **Testing** - RSpec (Rails) and Jest (React) pre-configured
 - **Linting** - RuboCop (Ruby) and ESLint (TypeScript) ready to go
@@ -24,15 +25,13 @@ A production-ready full-stack boilerplate with a Rails 8 API backend and React 1
 | Database | PostgreSQL |
 | Testing | RSpec, Jest |
 | Linting | RuboCop, ESLint |
-| Deployment | Heroku |
+| Deployment | Docker, Heroku |
 
 ## Prerequisites
 
 Before you start, make sure you have:
 
-- **Ruby 3.3+** - `ruby --version`
-- **PostgreSQL** - `psql --version`
-- **Node.js** - `node --version` (recommend using nvm)
+- **Docker Desktop** - [Download here](https://www.docker.com/products/docker-desktop/)
 - **Heroku CLI** - `heroku --version` (for deployment)
 
 ## Getting Started
@@ -50,77 +49,120 @@ git add .
 git commit -m "Initial commit from template"
 ```
 
-### 2. Rename Your App
-
-Update these files with your app name (replace `myapp` with your app name):
+### 2. Start the Application
 
 ```bash
-# config/database.yml - Change database names
-sed -i '' 's/myapp/yourappname/g' config/database.yml
-
-# frontend/package.json - Change the name field (optional)
+# Start all services (PostgreSQL, Rails API, React frontend)
+docker compose up
 ```
 
-### 3. Generate New Credentials
-
-The template doesn't include credentials (for security). Generate your own:
-
-```bash
-# This creates config/master.key and config/credentials.yml.enc
-EDITOR="code --wait" rails credentials:edit
+Wait for the services to start. You'll see output like:
+```
+api-1       | * Listening on http://0.0.0.0:3000
+frontend-1  | Compiled successfully!
 ```
 
-**Important:** Save `config/master.key` somewhere safe - you'll need it for Heroku.
+### 3. Set Up the Database
 
-### 4. Install Dependencies
+In a new terminal:
 
 ```bash
-# Ruby gems
-bundle install
-
-# Node packages
-cd frontend && npm install && cd ..
-
-# Root packages (husky/lint-staged for pre-commit hooks)
-npm install
+docker compose exec api rails db:create db:migrate
 ```
 
-### 5. Create Databases
+### 4. Open the App
+
+- **Frontend**: http://localhost:3001
+- **API**: http://localhost:3000
+
+That's it! You're ready to develop.
+
+## Development
+
+### Starting/Stopping Services
 
 ```bash
-rails db:create db:migrate
+# Start all services
+docker compose up
+
+# Start in background
+docker compose up -d
+
+# View logs (when running in background)
+docker compose logs -f
+
+# Stop all services
+docker compose down
 ```
 
-### 6. Verify Setup
+### Running Commands
 
 ```bash
-# Run tests
-bundle exec rspec
-cd frontend && CI=true npm test && cd ..
+# Rails console
+docker compose exec api rails console
 
-# Run linters
-bundle exec rubocop
-cd frontend && npm run lint && cd ..
+# Run migrations
+docker compose exec api rails db:migrate
+
+# Generate a model
+docker compose exec api rails generate model Post title:string body:text
+
+# Install a new gem (after adding to Gemfile)
+docker compose exec api bundle install
+# Then rebuild: docker compose build api
+```
+
+### Running Tests
+
+```bash
+# Rails tests
+docker compose exec api bundle exec rspec
+
+# React tests
+docker compose exec frontend npm test
+
+# React tests with coverage
+docker compose exec frontend npm run test:coverage
+```
+
+### Running Linters
+
+```bash
+# Ruby
+docker compose exec api bundle exec rubocop
+
+# TypeScript
+docker compose exec frontend npm run lint
 
 # TypeScript type checking
-cd frontend && npm run typecheck && cd ..
+docker compose exec frontend npm run typecheck
 ```
 
-## Local Development
+### Rebuilding Containers
 
-Run both servers:
+After changing `Gemfile` or `Dockerfile.dev`:
 
 ```bash
-# Terminal 1 - Rails API (port 3000)
-rails server -p 3000
-
-# Terminal 2 - React dev server (port 3001)
-cd frontend && npm start
+docker compose build api
+docker compose up
 ```
 
-Visit http://localhost:3001
+## Rename Your App
 
-The React dev server proxies API requests to Rails automatically.
+Update these files with your app name:
+
+```bash
+# Update database name in docker-compose.yml
+# Change DATABASE_URL from myapp_development to yourappname_development
+```
+
+## Generate Credentials (for Heroku deployment)
+
+```bash
+docker compose exec api bash -c 'EDITOR="cat" rails credentials:edit'
+```
+
+Save the `config/master.key` file - you'll need it for Heroku.
 
 ## Deploying to Heroku
 
@@ -137,7 +179,8 @@ heroku addons:create heroku-postgresql:essential-0
 heroku config:set RAILS_MASTER_KEY=$(cat config/master.key)
 
 # 4. Build React for production
-cd frontend && npm run build && cp -r build/* ../public/ && cd ..
+docker compose exec frontend npm run build
+cp -r frontend/build/* public/
 
 # 5. Commit the build
 git add .
@@ -146,7 +189,7 @@ git commit -m "Build frontend for production"
 # 6. Deploy
 git push heroku master
 
-# 7. Run migrations (if you have any)
+# 7. Run migrations
 heroku run rails db:migrate
 ```
 
@@ -154,7 +197,8 @@ heroku run rails db:migrate
 
 ```bash
 # If frontend changed, rebuild it
-cd frontend && npm run build && cp -r build/* ../public/ && cd ..
+docker compose exec frontend npm run build
+cp -r frontend/build/* public/
 
 # Commit and push
 git add .
@@ -185,6 +229,14 @@ git push heroku master
 - **API routes** (`/api/v1/*`) return JSON
 - **All other routes** serve the React SPA from `public/index.html`
 - **React** handles client-side routing
+
+## Docker Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| `api` | 3000 | Rails API server |
+| `frontend` | 3001 | React dev server with hot reload |
+| `db` | 5432 | PostgreSQL database |
 
 ## Dark Mode
 
@@ -236,15 +288,15 @@ The project enforces minimum test coverage thresholds. Commits will be rejected 
 - Functions: 95%
 - Lines: 99%
 
-Run coverage reports locally:
+Run coverage reports:
 
 ```bash
 # Rails coverage
-bundle exec rspec
+docker compose exec api bundle exec rspec
 # View report: open coverage/index.html
 
 # React coverage
-cd frontend && npm run test:coverage
+docker compose exec frontend npm run test:coverage
 ```
 
 ## Project Structure
@@ -268,39 +320,46 @@ cd frontend && npm run test:coverage
 │   └── package.json
 ├── spec/                          # RSpec tests
 ├── public/                        # Built React app (production)
+├── Dockerfile                     # Production Docker image
+├── Dockerfile.dev                 # Development Docker image
+├── docker-compose.yml             # Local development services
 ├── Procfile                       # Heroku process config
 └── Gemfile                        # Ruby dependencies
 ```
 
 ## Common Issues
 
+### Container won't start
+
+Make sure Docker Desktop is running (whale icon in menu bar).
+
+### Database connection errors
+
+```bash
+# Recreate the database
+docker compose exec api rails db:drop db:create db:migrate
+```
+
+### Stale containers after code changes
+
+```bash
+# Rebuild and restart
+docker compose down
+docker compose build
+docker compose up
+```
+
+### Port already in use
+
+```bash
+# Stop all containers and try again
+docker compose down
+docker compose up
+```
+
 ### CORS Errors in Development
 
 The React dev server runs on port 3001 and proxies to Rails on 3000. CORS is configured in `config/initializers/cors.rb` to allow this.
-
-### Database Connection Errors on Heroku
-
-Make sure you've added the Postgres addon:
-```bash
-heroku addons:create heroku-postgresql:essential-0
-```
-
-### Missing Master Key
-
-If you see credential errors, make sure `RAILS_MASTER_KEY` is set:
-```bash
-heroku config:set RAILS_MASTER_KEY=$(cat config/master.key)
-```
-
-### React Build Not Showing
-
-Make sure you've built React and copied to public:
-```bash
-cd frontend && npm run build && cp -r build/* ../public/ && cd ..
-git add public/
-git commit -m "Update frontend build"
-git push heroku master
-```
 
 ---
 

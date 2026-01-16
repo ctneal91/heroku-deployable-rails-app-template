@@ -43,3 +43,11 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+/docker-compose*.yml
+
+# Ignore frontend node_modules (installed in container)
+/frontend/node_modules
+
+# Ignore coverage reports
+/coverage
+/frontend/coverage

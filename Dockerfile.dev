@@ -1,0 +1,29 @@
+# Development Dockerfile for Rails API
+FROM ruby:3.3.6-slim
+
+# Install dependencies
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    build-essential \
+    git \
+    libpq-dev \
+    libyaml-dev \
+    pkg-config \
+    postgresql-client \
+    curl \
+    && rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+WORKDIR /app
+
+# Install gems
+COPY Gemfile Gemfile.lock ./
+RUN bundle install
+
+# Copy application code
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Start Rails server
+CMD ["rails", "server", "-b", "0.0.0.0"]
